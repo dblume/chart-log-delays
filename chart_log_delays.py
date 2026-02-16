@@ -65,7 +65,7 @@ def CheckCachedLogfile(log: Log) -> None:
             f.write(response.text)
 
 
-def PlotLogs(log: Log, days: int, plot_to_png: bool = True) -> None:
+def PlotLogs(log: Log, days: int, output_format: str = 'png') -> None:
     with open(log.filename, 'r', encoding='utf-8') as f:
         i = 0
         scheduled_runs = list()
@@ -100,42 +100,75 @@ def PlotLogs(log: Log, days: int, plot_to_png: bool = True) -> None:
         if scheduled_runs:
             rmin = scheduled_runs[0][0]
 
-    with subprocess.Popen(["gnuplot"], stdin=subprocess.PIPE, encoding='utf8') as gnuplot:
-        if plot_to_png:
-            gnuplot.stdin.write(f"set term png size 1600,500; set output '{log.filename}.png'\n")
-            print(f"Writing {log.filename}.png")
-        else:
-            gnuplot.stdin.write("set term block braille size `tput cols`,`tput lines`*8/9\n")
-        clean_filename = log.url.replace('_', '-')
-        gnuplot.stdin.write('set style textbox opaque fillcolor "0x20FFFFFF" noborder\n')
-        gnuplot.stdin.write(f'set label "{clean_filename}" at graph 0.03, 0.96 boxed front\n')
-        gnuplot.stdin.write("set xdata time\n")
-        gnuplot.stdin.write(f"set timefmt \"%Y-%m-%dT%H-%M\"\n")
+    if output_format == 'html':
+        # Generate HTML with Chart.js
+        labels = []
+        data = []
+        for timestamp, delay_s in scheduled_runs:
+            labels.append(timestamp.strftime('%Y-%m-%d %H:%M'))
+            data.append(int(delay_s / 60))
 
-        gnuplot.stdin.write("set xtics 60 * 60 * 24 out rotate by -65\n")
-        gnuplot.stdin.write("set format x \"%m-%d-%y\"\n")
-        gnuplot.stdin.write('set ylabel "cronjob delay (m)"\n')
-        gnuplot.stdin.write(f'set xrange ["{rmin.strftime('%Y-%m-%dT%H-%M')}":"{rmax.strftime('%Y-%m-%dT%H-%M')}"]\n')
-        gnuplot.stdin.write(f"set style fill solid 0.5\n")
+        labels_json = str(labels).replace("'", '"')
+        data_json = str(data)
+        chart_title = log.url.replace("_", "-")
 
-        if plot_to_png:
-            gnuplot.stdin.write(f'set key opaque fillcolor "0x20FFFFFF"\n')
-        gnuplot.stdin.write(f"plot '-' using 1:2 title 'cronjob delays in minutes' with boxes fc 'blue'\n")
-        for i in scheduled_runs:
-           gnuplot.stdin.write(f"{i[0].strftime('%Y-%m-%dT%H-%M')} {int(i[1]/60)}\n")
-        gnuplot.stdin.write("e\n")
-        gnuplot.stdin.flush()
+        html_content = """<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Chart from chart-log-delays</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <script>
+      new Chart('c', {type:'bar',data:{labels:""" + labels_json + """,datasets:[{label:'cronjob delays in minutes',data:""" + data_json + """,backgroundColor:'rgb(0, 0, 255, 0.5)',borderColor:'rgb(0, 0, 255)',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:true,scales:{y:{beginAtZero:true,title:{display:true,text:'cronjob delay (m)'}}},plugins:{title:{display:true,text:'""" + chart_title + """'}}}});
+    </script>
+  </body>
+</html>"""
+
+        output_file = f"{log.filename}.html"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        print(f"Writing {output_file}")
+    else:
+        # Use gnuplot for PNG and text output
+        with subprocess.Popen(["gnuplot"], stdin=subprocess.PIPE, encoding='utf8') as gnuplot:
+            if output_format == 'png':
+                gnuplot.stdin.write(f"set term png size 1600,500; set output '{log.filename}.png'\n")
+                print(f"Writing {log.filename}.png")
+            else:  # text
+                gnuplot.stdin.write("set term block braille size `tput cols`,`tput lines`*8/9\n")
+            clean_filename = log.url.replace('_', '-')
+            gnuplot.stdin.write('set style textbox opaque fillcolor "0x20FFFFFF" noborder\n')
+            gnuplot.stdin.write(f'set label "{clean_filename}" at graph 0.03, 0.96 boxed front\n')
+            gnuplot.stdin.write("set xdata time\n")
+            gnuplot.stdin.write(f"set timefmt \"%Y-%m-%dT%H-%M\"\n")
+
+            gnuplot.stdin.write("set xtics 60 * 60 * 24 out rotate by -65\n")
+            gnuplot.stdin.write("set format x \"%m-%d-%y\"\n")
+            gnuplot.stdin.write('set ylabel "cronjob delay (m)"\n')
+            gnuplot.stdin.write(f'set xrange ["{rmin.strftime('%Y-%m-%dT%H-%M')}":"{rmax.strftime('%Y-%m-%dT%H-%M')}"]\n')
+            gnuplot.stdin.write(f"set style fill solid 0.5\n")
+
+            if output_format == 'png':
+                gnuplot.stdin.write(f'set key opaque fillcolor "0x20FFFFFF"\n')
+            gnuplot.stdin.write(f"plot '-' using 1:2 title 'cronjob delays in minutes' with boxes fc 'blue'\n")
+            for i in scheduled_runs:
+               gnuplot.stdin.write(f"{i[0].strftime('%Y-%m-%dT%H-%M')} {int(i[1]/60)}\n")
+            gnuplot.stdin.write("e\n")
+            gnuplot.stdin.flush()
 
 
-def main(days: int, plot_to_png: bool) -> None:
+def main(days: int, output_format: str) -> None:
     for log in Logs:
         CheckCachedLogfile(log)
-        PlotLogs(log, days, plot_to_png)
+        PlotLogs(log, days, output_format)
 
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Visualize cronjob delays from log files.')
     parser.add_argument('-d', '--days', type=int, default=0, help='Number of days back to plot')
-    parser.add_argument('--cli', action='store_true', help='Output to terminal using braille instead of PNG')
+    parser.add_argument('--out', choices=['png', 'html', 'text'], default='png', help='Output format: png (default), html (Chart.js), or text (braille)')
     args = parser.parse_args()
-    main(args.days, plot_to_png=not args.cli)
+    main(args.days, args.out)
