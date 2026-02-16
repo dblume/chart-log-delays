@@ -12,9 +12,49 @@ First, have a cronjob run every hour, and just append the time it ran to a logfi
 
     30      *       *       *       *     echo "$(date)" >>cronjob_log.txt
 
-Then, run the script to analyze the log file and generate a chart of the delays. Ideally there won't be many delays, but if there are, the chart will show them clearly.
+After a few hours, you should *expect* to see a log file with entries like this:
 
-    python3 chart_log_delays.py
+    Sat Feb 14 14:30:00 PST 2026
+    Sat Feb 14 15:30:00 PST 2026
+    Sat Feb 14 16:30:00 PST 2026
+    Sat Feb 14 17:30:00 PST 2026
+    Sat Feb 14 18:30:00 PST 2026
+
+But if what you actually see is something like the following, a graph of the delays
+will better reveal just how bad the delays are:
+
+    Sat Feb 14 14:34:16 PST 2026
+    Sat Feb 14 17:33:21 PST 2026
+    Sat Feb 14 18:38:59 PST 2026
+    Sat Feb 14 23:35:02 PST 2026
+    Sun Feb 15 02:33:45 PST 2026
+
+Run the script to analyze the log file and generate a chart of the delays. 
+Ideally there won't be many delays, but if there are, the chart will show them clearly.
+(We demonstrate with `--cli` to show the chart in the terminal, but it may 
+not render nice in the README.)
+
+```
+$ python3 chart_log_delays.py --cli -d 2
+60⠀⢰⢲⡳⡖⢲⡲⡶⣲⡲⡶⣲⡲⡶⡲⡶⣲⠒⡶⣲⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⡶⣲⡲⣲⡲⡾⣲⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⡶⣲⡲⡖⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⡆
+⠀⠀⠀⢸⢸https://dblu.me/dreamhost-00.txt⡯⣺⡪⣺⡪⡯⣺cronjob⠀delays⡪in⠀minutes⠀⢰⣲⣲⣲⣲⡆⠀⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+50⠀⢸⢹⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+40⠀⢸⣸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+30⠀⢸⢺⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+20⠀⢸⢹⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇
+⠀⠀⠀⢸⢸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⠀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+10⠀⢸⣸⡪⡇⢸⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⣀⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡇
+⠀⠀⠀⢸⣼⡪⡧⣼⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⡪⡯⣺⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⣺⡪⡯⣺⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇
+⠀⠀⠀⢸⣺⡪⡯⣺⡪⡯⣺⡪⡯⣺⡪⡯⡪⡯⣺⡪⡯⣺⠀⠀⠀⠀⣀⣰⡲⣲⣀⡶⣲⡲⣆⣠⡤⡯⣺⡪⣺⡪⡯⣺⡪⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡯⣺⡪⡇⠀⠀⠀⢀⣀⣠⡤⡤⣤⠀⠀⠀⠀⣀⣀⣀⡤⡇
+⠀0⠀⠸⠾⡮⠯⠾⠮⠯⠾⠮⠯⠾⠮⠯⠮⠯⠾⠮⠯⠾⠤⠶⠶⠶⠯⠾⠮⠾⠮⠯⠾⠮⠯⠾⠮⠯⠾⠮⠾⠮⢯⠾⠮⠧⠤⠤⠤⠤⠤⠤⠤⠯⠿⠯⠯⠾⠮⠧⠴⠶⠶⠾⠮⠾⠮⠯⠾⠤⠤⠴⠶⠯⠾⠮⠯⠇
+⠀02-14-26⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀02-15-26⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+```
 
 During development, use `entr` in another window for continuous testing:
 

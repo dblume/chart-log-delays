@@ -34,8 +34,8 @@ sys.excepthook = filenum_excepthook
 
 Log = namedtuple('Log', ['hour_offset', 'frequency_s', 'filename', 'url'])
 
-Logs = [#Log(30, -1,      'fm_stats.txt',     'https://david.dlma.com/location/fm_stats.txt'),
-        #Log(30, 60 * 60, 'dreamhost_30.txt', 'https://dblu.me/dreamhost_30.txt'),
+Logs = [Log(30, -1,      'fm_stats.txt',     'https://david.dlma.com/location/fm_stats.txt'),
+        Log(30, 60 * 60, 'dreamhost_30.txt', 'https://dblu.me/dreamhost_30.txt'),
         Log(00, 60 * 60, 'dreamhost_00.txt', 'https://dblu.me/dreamhost_00.txt'),
         #Log(00, 30 * 60, 'dreamhost.txt',    'https://dblu.me/dreamhost.txt'), # <-- half hour cadence, but 1h timeouts cause ambiguity about which run is which.
        ]
@@ -118,7 +118,8 @@ def PlotLogs(log: Log, days: int, plot_to_png: bool = True) -> None:
         gnuplot.stdin.write(f'set xrange ["{rmin.strftime('%Y-%m-%dT%H-%M')}":"{rmax.strftime('%Y-%m-%dT%H-%M')}"]\n')
         gnuplot.stdin.write(f"set style fill solid 0.5\n")
 
-        gnuplot.stdin.write(f'set key opaque fillcolor "0x20FFFFFF"\n')
+        if plot_to_png:
+            gnuplot.stdin.write(f'set key opaque fillcolor "0x20FFFFFF"\n')
         gnuplot.stdin.write(f"plot '-' using 1:2 title 'cronjob delays in minutes' with boxes fc 'blue'\n")
         for i in scheduled_runs:
            gnuplot.stdin.write(f"{i[0].strftime('%Y-%m-%dT%H-%M')} {int(i[1]/60)}\n")
