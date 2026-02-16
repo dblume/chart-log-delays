@@ -6,11 +6,12 @@
 
 This project provides a Python script to analyze and visualize log delays in a chart format. It reads log data, calculates delays, and generates a visual representation of the delays over time.
 
-### What Happens?
+## Why?
 
-First, have a cronjob run every hour, and just append the time it ran to a logfile.
+Suppose you have a cronjob run every hour, and it just appends 
+the time it ran to a logfile.
 
-    30      *       *       *       *     echo "$(date)" >>cronjob_log.txt
+    30   *   *   *   *   echo "$(date)" >>cronjob_log.txt
 
 After a few hours, you should *expect* to see a log file with entries like this:
 
@@ -20,8 +21,7 @@ After a few hours, you should *expect* to see a log file with entries like this:
     Sat Feb 14 17:30:00 PST 2026
     Sat Feb 14 18:30:00 PST 2026
 
-But if what you actually see is something like the following, a graph of the delays
-will better reveal just how bad the delays are:
+But if what you actually see is something like the following? It's a mess.
 
     Sat Feb 14 14:34:16 PST 2026
     Sat Feb 14 17:33:21 PST 2026
@@ -29,8 +29,9 @@ will better reveal just how bad the delays are:
     Sat Feb 14 23:35:02 PST 2026
     Sun Feb 15 02:33:45 PST 2026
 
+A graph of the delays will reveal just how bad the problem is.
+
 Run the script to analyze the log file and generate a chart of the delays. 
-Ideally there won't be many delays, but if there are, the chart will show them clearly.
 (We demonstrate with `--cli` to show the chart in the terminal, but it may 
 not render nice in the README.)
 
