@@ -122,7 +122,19 @@ def PlotLogs(log: Log, days: int, output_format: str = 'png') -> None:
   <body>
     <canvas id="c"></canvas>
     <script>
-      new Chart('c', {type:'bar',data:{labels:""" + labels_json + """,datasets:[{label:'cronjob delays in minutes',data:""" + data_json + """,backgroundColor:'rgb(0, 0, 255, 0.5)',borderColor:'rgb(0, 0, 255)',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:true,scales:{y:{beginAtZero:true,title:{display:true,text:'cronjob delay (m)'}}},plugins:{title:{display:true,text:'""" + chart_title + """'}}}});
+      new Chart('c', {type:'bar',
+                      data:{labels:""" + labels_json + """,
+                            datasets:[{barPercentage:1.0,categoryPercentage:1.0,label:'cronjob delays in minutes',data:""" + data_json + """,backgroundColor:'rgb(0, 0, 255, 0.5)'}]},
+                      options:{responsive:true,
+                               maintainAspectRatio:true,
+                               scales:{y:{beginAtZero:true,title:{display:true,text:'cronjob delay (m)'}},
+                                       x:{ticks:{autoSkip:false,callback:function(value,index){
+                                           const l = this.getLabelForValue(value);
+                                           if (index > 0) {
+                                               const previousLabel = this.chart.data.labels[index - 1];
+                                               return l[8] !== this.chart.data.labels[index - 1][8] || l[9] !== this.chart.data.labels[index - 1][9] ? l.substring(0,10) : '';}
+                                           return l.substring(0,10); }}}},
+                               plugins:{title:{display:true,text:'""" + chart_title + """'}}}});
     </script>
   </body>
 </html>"""
