@@ -65,7 +65,7 @@ def CheckCachedLogfile(log: Log) -> None:
             f.write(response.text)
 
 
-def PlotLogs(log: Log) -> None:
+def PlotLogs(log: Log, days: int, plot_to_png: bool = True) -> None:
     with open(log.filename, 'r', encoding='utf-8') as f:
         i = 0
         scheduled_runs = list()
@@ -94,16 +94,18 @@ def PlotLogs(log: Log) -> None:
             expected = next_expected(expected, log.frequency_s)
             i += 1
 
-    for i in scheduled_runs:
-        if i[1] < 0:
-            print(f"{i[0].strftime('%Y-%m-%d %H:%M')} {int(i[1])} <- should have been positive {log.filename}")
+    if days > 0:
+        cutoff = datetime.datetime.now() - datetime.timedelta(days=days)
+        scheduled_runs = [r for r in scheduled_runs if r[0] >= cutoff]
+        if scheduled_runs:
+            rmin = scheduled_runs[0][0]
 
     with subprocess.Popen(["gnuplot"], stdin=subprocess.PIPE, encoding='utf8') as gnuplot:
-        plot_to_png = True
         if plot_to_png:
             gnuplot.stdin.write(f"set term png size 1600,500; set output '{log.filename}.png'\n")
+            print(f"Writing {log.filename}.png")
         else:
-            gnuplot.stdin.write("set term block braille size `tput cols`,`tput lines`*4/9\n")
+            gnuplot.stdin.write("set term block braille size `tput cols`,`tput lines`*8/9\n")
         clean_filename = log.url.replace('_', '-')
         gnuplot.stdin.write('set style textbox opaque fillcolor "0x20FFFFFF" noborder\n')
         gnuplot.stdin.write(f'set label "{clean_filename}" at graph 0.03, 0.96 boxed front\n')
@@ -113,7 +115,7 @@ def PlotLogs(log: Log) -> None:
         gnuplot.stdin.write("set xtics 60 * 60 * 24 out rotate by -65\n")
         gnuplot.stdin.write("set format x \"%m-%d-%y\"\n")
         gnuplot.stdin.write('set ylabel "cronjob delay (m)"\n')
-        gnuplot.stdin.write(f'set xrange ["{rmin}":"{rmax}"]\n')
+        gnuplot.stdin.write(f'set xrange ["{rmin.strftime('%Y-%m-%dT%H-%M')}":"{rmax.strftime('%Y-%m-%dT%H-%M')}"]\n')
         gnuplot.stdin.write(f"set style fill solid 0.5\n")
 
         gnuplot.stdin.write(f'set key opaque fillcolor "0x20FFFFFF"\n')
@@ -122,17 +124,17 @@ def PlotLogs(log: Log) -> None:
            gnuplot.stdin.write(f"{i[0].strftime('%Y-%m-%dT%H-%M')} {int(i[1]/60)}\n")
         gnuplot.stdin.write("e\n")
         gnuplot.stdin.flush()
-        print(f"Wrote {log.filename}.png")
 
 
-def main(debug: bool) -> None:
+def main(days: int, plot_to_png: bool) -> None:
     for log in Logs:
         CheckCachedLogfile(log)
-        PlotLogs(log)
+        PlotLogs(log, days, plot_to_png)
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Just a template sample.')
-    parser.add_argument('-d', '--debug', action='store_true')
+    parser = ArgumentParser(description='Visualize cronjob delays from log files.')
+    parser.add_argument('-d', '--days', type=int, default=0, help='Number of days back to plot')
+    parser.add_argument('--cli', action='store_true', help='Output to terminal using braille instead of PNG')
     args = parser.parse_args()
-    main(args.debug)
+    main(args.days, plot_to_png=not args.cli)
