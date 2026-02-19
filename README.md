@@ -28,16 +28,14 @@ But if what you actually see is something like the following? It's a mess.
     Sat Feb 14 23:35:02 PST 2026
     Sun Feb 15 02:33:45 PST 2026
 
-A graph of the delays will reveal just how bad the problem is.
-
-Run the script to analyze the log file and generate a chart of the delays. 
-(We demonstrate with `--cli` to show the chart in the terminal, but it may 
-not render nice in the README.)
+A graph of the delays will reveal just how bad the problem is. Run the script to
+analyze the log file and generate a chart of the delays. 
 
     $ python3 chart_log_delays.py --out png -d 5
 ![bar chart](https://dblume.github.io/images/chart-log-events_dreamhost_30.png)
 
-Yikes, those tall blue bars are scheduled jobs that never ran.
+Yikes, those tall blue bars are scheduled jobs that never ran. Ideally, you don't
+want to see any blue bars at all. Generally, the shorter the better.
 
 There are three output modes you can set with `--out`:
 
