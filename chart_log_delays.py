@@ -74,9 +74,15 @@ def PlotLogs(log: Log, days: int, output_format: str = 'png') -> None:
         else:
             max_duration_s = CRON_TIMEOUT_S
         for line in f:
-            # We support two timestamp formats: "2024-06-01, 09:30" and "Sat Jun 01 09:30:00 UTC 2024"
+            # We support three timestamp formats:
+            # "2024-06-01, 09:30"
+            # "2024-06-01 09:30:33 PST"
+            # "Sat Jun 01 09:30:00 UTC 2024"
             if line[0].isdigit():
-                observed = datetime.datetime.strptime(line[:17], '%Y-%m-%d, %H:%M')
+                if line[10] == ',':
+                    observed = datetime.datetime.strptime(line[:17], '%Y-%m-%d, %H:%M')
+                else:
+                    observed = datetime.datetime.strptime(line[:23], '%Y-%m-%d %H:%M:%S %Z')
             else:
                 observed = datetime.datetime.strptime(line[:28], '%a %b %d %H:%M:%S %Z %Y')
             if i == 0:
@@ -147,10 +153,10 @@ def PlotLogs(log: Log, days: int, output_format: str = 'png') -> None:
         # Use gnuplot for PNG and text output
         with subprocess.Popen(["gnuplot"], stdin=subprocess.PIPE, encoding='utf8') as gnuplot:
             if output_format == 'png':
-                gnuplot.stdin.write(f"set term png size 1600,500; set output '{log.filename}.png'\n")
+                gnuplot.stdin.write(f"set term png size 1200,400; set output '{log.filename}.png'\n")
                 print(f"Writing {log.filename}.png")
             else:  # text
-                gnuplot.stdin.write("set term block braille size `tput cols`,`tput lines`*8/9\n")
+                gnuplot.stdin.write("set term block braille size `tput cols`,`tput lines`*3/9\n")
             clean_filename = log.url.replace('_', '-')
             gnuplot.stdin.write('set style textbox opaque fillcolor "0x20FFFFFF" noborder\n')
             gnuplot.stdin.write(f'set label "{clean_filename}" at graph 0.03, 0.96 boxed front\n')
